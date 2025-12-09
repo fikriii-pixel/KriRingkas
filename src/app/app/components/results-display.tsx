@@ -39,11 +39,18 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
   const isRtl = language === 'Arab';
 
-  const formattedKonten = ringkasan.konten.replace(/● /g, '● ').replace(/\n/g, '<br />');
+  const formattedKonten = ringkasan.konten.split('\n').map(line => line.trim()).filter(line => line.length > 0).map(line => {
+    // Check if the line is a bullet point, handle both "●" and "•"
+    if (line.startsWith('●') || line.startsWith('•')) {
+      // For RTL, the bullet should be on the right. The browser handles this with `direction: rtl`.
+      return `<p style="padding-left: 1.5em; text-indent: -1.5em;">${line}</p>`;
+    }
+    return `<p>${line}</p>`;
+  }).join('');
 
   const copyToClipboard = () => {
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = formattedKonten.replace(/<br \/>/g, '\n');
+    tempDiv.innerHTML = ringkasan.konten.replace(/<br \/>/g, '\n');
     const plainText = tempDiv.textContent || tempDiv.innerText || '';
     
     navigator.clipboard.writeText(plainText).then(() => {
@@ -62,7 +69,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   };
 
   const downloadAsDocx = () => {
-    const paragraphs = formattedKonten.split(/<br \s*\/?>/gi).map(line => {
+    const paragraphs = ringkasan.konten.split(/\n/gi).map(line => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = line;
         return new Paragraph({

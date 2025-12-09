@@ -26,6 +26,16 @@ import LoadingSkeleton from './components/loading-skeleton';
 import InitialState from './components/initial-state';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   AlertCircle,
   FileText,
   Languages,
@@ -64,6 +74,8 @@ export default function AppPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { checkLimit, incrementUsage } = useDailyLimit();
+
+  const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
 
   const isButtonDisabled = isLoading || !outputType || !language ||
     (inputType === 'text' && !journalText.trim()) ||
@@ -151,8 +163,19 @@ export default function AppPage() {
 
     setIsLoading(false);
   };
+  
+  const handleReset = () => {
+    setResult(null);
+    setError(null);
+    setIsResetAlertOpen(false);
+    toast({
+        title: 'Hasil Direset',
+        description: 'Hasil ringkasan telah dibersihkan.',
+    });
+  };
 
   return (
+    <>
     <div className="container py-10">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="shadow-lg">
@@ -280,10 +303,25 @@ export default function AppPage() {
               </AlertDescription>
             </Alert>
           )}
-          {!isLoading && !error && result && <ResultsDisplay result={result} />}
+          {!isLoading && !error && result && <ResultsDisplay result={result} onReset={() => setIsResetAlertOpen(true)} />}
           {!isLoading && !error && !result && <InitialState />}
         </div>
       </div>
     </div>
+    <AlertDialog open={isResetAlertOpen} onOpenChange={setIsResetAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah Anda Yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini akan menghapus hasil ringkasan saat ini secara permanen. Anda tidak dapat mengurungkan tindakan ini.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReset}>Lanjutkan & Reset</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

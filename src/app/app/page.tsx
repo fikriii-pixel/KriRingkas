@@ -223,7 +223,7 @@ export default function AppPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="output-type" className="flex items-center gap-2"><Package/>Jenis Output</Label>
+                  <Label htmlFor="output-type" className="flex items-center gap-2"><Package/>Jenis</Label>
                   <Select value={outputType} onValueChange={setOutputType} disabled={isLoading}>
                     <SelectTrigger id="output-type">
                       <SelectValue placeholder="Pilih jenis output" />
@@ -237,7 +237,7 @@ export default function AppPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="language" className="flex items-center gap-2"><Languages/>Bahasa Target</Label>
+                  <Label htmlFor="language" className="flex items-center gap-2"><Languages/>Bahasa</Label>
                   <Select value={language} onValueChange={setLanguage} disabled={isLoading}>
                     <SelectTrigger id="language">
                       <SelectValue placeholder="Pilih bahasa" />

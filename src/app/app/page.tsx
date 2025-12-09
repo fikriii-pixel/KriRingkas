@@ -54,7 +54,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import pdf from 'pdf-parse/lib/pdf-parse';
+import * as pdfjsLib from 'pdfjs-dist';
 
 type InputType = 'text' | 'pdf' | 'url';
 
@@ -78,9 +78,9 @@ export default function AppPage() {
 
   const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
 
-  // pdf-parse setup for browser environment
+  // pdf.js setup for browser environment
   if (typeof window !== 'undefined') {
-    (window as any).pdfjsWorker = require('pdfjs-dist/build/pdf.worker.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
   }
 
   const isButtonDisabled = isLoading || !outputType || !language ||
@@ -122,9 +122,14 @@ export default function AppPage() {
       if (inputType === 'pdf' && file) {
           try {
             const arrayBuffer = await file.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const data = await pdf(buffer);
-            textToProcess = data.text;
+            const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                fullText += textContent.items.map(item => 'str' in item ? item.str : '').join(' ') + '\n';
+            }
+            textToProcess = fullText;
           } catch (pdfError) {
               console.error("Error parsing PDF on client:", pdfError);
               throw new Error("Gagal membaca file PDF. Pastikan file tidak rusak atau terenkripsi.");

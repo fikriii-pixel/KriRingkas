@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -110,64 +110,23 @@ export default function AppPage() {
     setError(null);
     
     const formData = new FormData();
+    formData.append('inputType', inputType);
     formData.append('outputType', outputType);
     formData.append('language', language);
     formData.append('summaryIntensity', String(summaryIntensity[0]));
-    formData.append('inputType', inputType);
-
-
+    
+    if (inputType === 'text') {
+      formData.append('journalText', journalText);
+    } else if (inputType === 'url') {
+      formData.append('url', url);
+    } else if (inputType === 'pdf' && file) {
+      formData.append('pdfFile', file);
+    } else {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      let textToSummarize = '';
-
-      if (inputType === 'text') {
-        textToSummarize = journalText;
-        formData.append('journalText', textToSummarize);
-      } else if (inputType === 'url' && url) {
-        formData.append('url', url);
-      } else if (inputType === 'pdf' && file) {
-        try {
-          const pdfjs = await import('pdfjs-dist');
-          // Use the CDN-hosted worker
-          pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
-
-          const reader = new FileReader();
-          reader.readAsArrayBuffer(file);
-          
-          textToSummarize = await new Promise<string>((resolve, reject) => {
-            reader.onload = async (event) => {
-              try {
-                if (!event.target?.result) {
-                    return reject(new Error("Gagal membaca file."));
-                }
-                const pdfData = new Uint8Array(event.target.result as ArrayBuffer);
-                const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
-                let textContent = '';
-                for (let i = 1; i <= pdf.numPages; i++) {
-                  const page = await pdf.getPage(i);
-                  const text = await page.getTextContent();
-                  textContent += text.items.map(s => (s as any).str).join(' ');
-                }
-                resolve(textContent);
-              } catch (pdfError) {
-                  reject(new Error("Gagal memproses PDF. Pastikan file tidak rusak."));
-              }
-            };
-            reader.onerror = () => {
-                reject(new Error("Gagal membaca file."));
-            };
-          });
-
-          formData.append('journalText', textToSummarize);
-
-        } catch (pdfError) {
-            throw pdfError;
-        }
-      }
-
-      if (inputType !== 'url' && !textToSummarize.trim()) {
-        throw new Error('Tidak ada konten teks yang dapat diringkas.');
-      }
-      
       const response = await summarizeJournalAction(formData);
 
       if (response.error) {
@@ -354,5 +313,3 @@ export default function AppPage() {
     </>
   );
 }
-
-    

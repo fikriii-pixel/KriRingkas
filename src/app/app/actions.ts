@@ -5,7 +5,8 @@ import {
   type GenerateStructuredAcademicSummaryOutput,
 } from '@/ai/flows/generate-structured-academic-summary';
 import { z } from 'zod';
-import pdf from 'pdf-parse';
+import pdf from 'pdf-parse/lib/pdf-parse.js';
+
 
 type ActionResult = {
   data?: GenerateStructuredAcademicSummaryOutput;

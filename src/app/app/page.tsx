@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -109,27 +109,26 @@ export default function AppPage() {
     setResult(null);
     setError(null);
     
-    let textToSummarize = '';
+    const formData = new FormData();
+    formData.append('outputType', outputType);
+    formData.append('language', language);
+    formData.append('summaryIntensity', String(summaryIntensity[0]));
+    formData.append('inputType', inputType);
+
 
     try {
+      let textToSummarize = '';
+
       if (inputType === 'text') {
         textToSummarize = journalText;
+        formData.append('journalText', textToSummarize);
       } else if (inputType === 'url' && url) {
-         const formData = new FormData();
-         formData.append('inputType', 'url');
-         formData.append('url', url);
-         const response = await summarizeJournalAction(formData);
-         if (response.error) throw new Error(response.error);
-         if (response.data) {
-            setResult(response.data);
-            setIsLoading(false);
-            return;
-         }
+        formData.append('url', url);
       } else if (inputType === 'pdf' && file) {
         try {
-          const pdfjs = await import('pdfjs-dist/build/pdf');
-          const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
-          pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+          const pdfjs = await import('pdfjs-dist');
+          // Use the CDN-hosted worker
+          pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
           const reader = new FileReader();
           reader.readAsArrayBuffer(file);
@@ -158,22 +157,17 @@ export default function AppPage() {
             };
           });
 
+          formData.append('journalText', textToSummarize);
+
         } catch (pdfError) {
             throw pdfError;
         }
       }
 
-      if (!textToSummarize.trim()) {
+      if (inputType !== 'url' && !textToSummarize.trim()) {
         throw new Error('Tidak ada konten teks yang dapat diringkas.');
       }
       
-      const formData = new FormData();
-      formData.append('outputType', outputType);
-      formData.append('language', language);
-      formData.append('inputType', 'text');
-      formData.append('journalText', textToSummarize);
-      formData.append('summaryIntensity', String(summaryIntensity[0]));
-
       const response = await summarizeJournalAction(formData);
 
       if (response.error) {
@@ -251,7 +245,7 @@ export default function AppPage() {
                 <TabsContent value="pdf" className="mt-4 space-y-2">
                    <Label htmlFor="pdf-upload">Unggah File PDF</Label>
                     <div className="flex items-center space-x-2">
-                        <Input id="pdf-upload" type="file" accept="application/pdf" onChange={handleFileChange} disabled={isLoading} className="cursor-pointer file:cursor-pointer file:text-primary file:font-semibold hover:file:bg-primary/10"/>
+                        <Input id="pdf-upload" name="file" type="file" accept="application/pdf" onChange={handleFileChange} disabled={isLoading} className="cursor-pointer file:cursor-pointer file:text-primary file:font-semibold hover:file:bg-primary/10"/>
                     </div>
                     {file && <p className="text-sm text-muted-foreground">File terpilih: {file.name}</p>}
                     {fileError && <p className="text-sm text-destructive">{fileError}</p>}
@@ -360,3 +354,5 @@ export default function AppPage() {
     </>
   );
 }
+
+    

@@ -46,7 +46,6 @@ export async function summarizeJournalAction(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    // We don't use file from client, so we don't validate it.
     const rawData = Object.fromEntries(formData.entries());
     const validatedInput = actionInputSchema.safeParse(rawData);
     
@@ -58,15 +57,14 @@ export async function summarizeJournalAction(
     
     let textToSummarize = '';
 
-    if (inputType === 'text') {
+    if (inputType === 'text' || inputType === 'pdf') {
         textToSummarize = journalText || '';
     } else if (inputType === 'url' && url) {
         textToSummarize = await getTextFromUrl(url);
     }
     
     if (!textToSummarize.trim()) {
-      // This can happen if URL fetch fails or PDF text is empty
-      throw new Error('Tidak ada konten teks yang dapat diringkas. Pastikan URL valid atau file PDF berisi teks.');
+      throw new Error('Tidak ada konten teks yang dapat diringkas. Pastikan input valid atau file berisi teks.');
     }
 
     const summary = await generateStructuredAcademicSummary({ 
@@ -86,3 +84,5 @@ export async function summarizeJournalAction(
     return { error: errorMessage };
   }
 }
+
+    

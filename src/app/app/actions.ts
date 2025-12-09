@@ -5,7 +5,6 @@ import {
   type GenerateStructuredAcademicSummaryOutput,
 } from '@/ai/flows/generate-structured-academic-summary';
 import { z } from 'zod';
-import pdf from 'pdf-parse';
 
 type ActionResult = {
   data?: GenerateStructuredAcademicSummaryOutput;
@@ -18,7 +17,10 @@ async function getTextFromUrl(url: string): Promise<string> {
     if (!response.ok) {
       throw new Error(`Gagal mengambil konten dari URL: ${response.statusText}`);
     }
+    // Simple text extraction, might not work for all sites.
     const html = await response.text();
+    // A very basic way to strip HTML tags.
+    // For robust solution, a library like Cheerio would be better.
     const text = html.replace(/<style[^>]*>.*?<\/style>/gs, ' ')
                      .replace(/<script[^>]*>.*?<\/script>/gs, ' ')
                      .replace(/<[^>]+>/g, ' ')
@@ -34,7 +36,6 @@ async function getTextFromUrl(url: string): Promise<string> {
 const actionInputSchema = z.object({
   inputType: z.enum(['text', 'pdf', 'url']),
   journalText: z.string().optional(),
-  file: z.instanceof(File).optional(),
   url: z.string().url().optional(),
   outputType: z.string(),
   language: z.string(),
@@ -45,12 +46,15 @@ export async function summarizeJournalAction(
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    const validatedInput = actionInputSchema.safeParse(Object.fromEntries(formData.entries()));
+    // We don't use file from client, so we don't validate it.
+    const rawData = Object.fromEntries(formData.entries());
+    const validatedInput = actionInputSchema.safeParse(rawData);
+    
     if (!validatedInput.success) {
       return { error: 'Input tidak valid: ' + validatedInput.error.format()._errors.join(', ') };
     }
 
-    const { inputType, journalText, file, url, outputType, language, summaryIntensity } = validatedInput.data;
+    const { inputType, journalText, url, outputType, language, summaryIntensity } = validatedInput.data;
     
     let textToSummarize = '';
 
@@ -58,19 +62,11 @@ export async function summarizeJournalAction(
         textToSummarize = journalText || '';
     } else if (inputType === 'url' && url) {
         textToSummarize = await getTextFromUrl(url);
-    } else if (inputType === 'pdf' && file) {
-        try {
-            const buffer = Buffer.from(await file.arrayBuffer());
-            const data = await pdf(buffer);
-            textToSummarize = data.text;
-        } catch (pdfError) {
-            console.error("Error parsing PDF on server:", pdfError);
-            throw new Error("Gagal membaca file PDF. Pastikan file tidak rusak atau terenkripsi.");
-        }
     }
-
+    
     if (!textToSummarize.trim()) {
-      throw new Error('Tidak ada konten teks yang dapat diringkas.');
+      // This can happen if URL fetch fails or PDF text is empty
+      throw new Error('Tidak ada konten teks yang dapat diringkas. Pastikan URL valid atau file PDF berisi teks.');
     }
 
     const summary = await generateStructuredAcademicSummary({ 

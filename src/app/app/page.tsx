@@ -108,21 +108,71 @@ export default function AppPage() {
     setIsLoading(true);
     setResult(null);
     setError(null);
+    
+    let textToSummarize = '';
 
     try {
+      if (inputType === 'text') {
+        textToSummarize = journalText;
+      } else if (inputType === 'url' && url) {
+         const formData = new FormData();
+         formData.append('inputType', 'url');
+         formData.append('url', url);
+         const response = await summarizeJournalAction(formData);
+         if (response.error) throw new Error(response.error);
+         if (response.data) {
+            setResult(response.data);
+            setIsLoading(false);
+            return;
+         }
+      } else if (inputType === 'pdf' && file) {
+        try {
+          const pdfjs = await import('pdfjs-dist/build/pdf');
+          const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
+          pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+          const reader = new FileReader();
+          reader.readAsArrayBuffer(file);
+          
+          textToSummarize = await new Promise<string>((resolve, reject) => {
+            reader.onload = async (event) => {
+              try {
+                if (!event.target?.result) {
+                    return reject(new Error("Gagal membaca file."));
+                }
+                const pdfData = new Uint8Array(event.target.result as ArrayBuffer);
+                const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
+                let textContent = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                  const page = await pdf.getPage(i);
+                  const text = await page.getTextContent();
+                  textContent += text.items.map(s => (s as any).str).join(' ');
+                }
+                resolve(textContent);
+              } catch (pdfError) {
+                  reject(new Error("Gagal memproses PDF. Pastikan file tidak rusak."));
+              }
+            };
+            reader.onerror = () => {
+                reject(new Error("Gagal membaca file."));
+            };
+          });
+
+        } catch (pdfError) {
+            throw pdfError;
+        }
+      }
+
+      if (!textToSummarize.trim()) {
+        throw new Error('Tidak ada konten teks yang dapat diringkas.');
+      }
+      
       const formData = new FormData();
       formData.append('outputType', outputType);
       formData.append('language', language);
-      formData.append('inputType', inputType);
+      formData.append('inputType', 'text');
+      formData.append('journalText', textToSummarize);
       formData.append('summaryIntensity', String(summaryIntensity[0]));
-      
-      if (inputType === 'text') {
-        formData.append('journalText', journalText);
-      } else if (inputType === 'pdf' && file) {
-        formData.append('file', file);
-      } else if (inputType === 'url') {
-        formData.append('url', url);
-      }
 
       const response = await summarizeJournalAction(formData);
 

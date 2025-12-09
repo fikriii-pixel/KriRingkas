@@ -6,7 +6,6 @@ import {
   type GenerateStructuredAcademicSummaryOutput,
 } from '@/ai/flows/generate-structured-academic-summary';
 import { z } from 'zod';
-import pdf from 'pdf-parse';
 
 type ActionResult = {
   data?: GenerateStructuredAcademicSummaryOutput;
@@ -34,22 +33,9 @@ async function getTextFromUrl(url: string): Promise<string> {
   }
 }
 
-async function getTextFromPdf(base64: string): Promise<string> {
-    try {
-        const buffer = Buffer.from(base64, 'base64');
-        const data = await pdf(buffer);
-        return data.text;
-    } catch (error) {
-        console.error('Error parsing PDF:', error);
-        throw new Error('Gagal memproses file PDF. Pastikan file tidak rusak.');
-    }
-}
-
-
 const actionInputSchema = z.object({
   inputType: z.enum(['text', 'pdf', 'url']),
-  journalText: z.string().optional(),
-  fileContent: z.string().optional(), // Base64 encoded file
+  journalText: z.string(), // Always expect text now
   url: z.string().url().optional(),
   outputType: z.string(),
   language: z.string(),
@@ -66,20 +52,16 @@ export async function summarizeJournalAction(
       return { error: 'Input tidak valid: ' + validatedInput.error.format()._errors.join(', ') };
     }
 
-    const { inputType, journalText, fileContent, url, outputType, language, summaryIntensity } = validatedInput.data;
+    const { inputType, journalText, url, outputType, language, summaryIntensity } = validatedInput.data;
     
     let textToSummarize = '';
 
-    if (inputType === 'text') {
-      if (!journalText) throw new Error('Teks jurnal tidak boleh kosong.');
-      textToSummarize = journalText;
-    } else if (inputType === 'pdf') {
-      if (!fileContent) throw new Error('Konten file PDF tidak ditemukan.');
-      textToSummarize = await getTextFromPdf(fileContent);
-    } else if (inputType === 'url') {
-      if (!url) throw new Error('URL tidak boleh kosong.');
-      textToSummarize = await getTextFromUrl(url);
+    if (inputType === 'url' && url) {
+        textToSummarize = await getTextFromUrl(url);
+    } else {
+        textToSummarize = journalText;
     }
+
 
     if (!textToSummarize.trim()) {
       throw new Error('Tidak ada konten teks yang dapat diringkas.');

@@ -54,22 +54,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
+import pdf from 'pdf-parse/lib/pdf-parse';
 
 type InputType = 'text' | 'pdf' | 'url';
-
-// Helper to convert file to base64
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      // Result is 'data:application/pdf;base64,....', we only need the base64 part
-      const base64String = (reader.result as string).split(',')[1];
-      resolve(base64String);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
 
 
 export default function AppPage() {
@@ -90,6 +77,11 @@ export default function AppPage() {
   const { toast } = useToast();
 
   const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
+
+  // pdf-parse setup for browser environment
+  if (typeof window !== 'undefined') {
+    (window as any).pdfjsWorker = require('pdfjs-dist/build/pdf.worker.min.js');
+  }
 
   const isButtonDisabled = isLoading || !outputType || !language ||
     (inputType === 'text' && !journalText.trim()) ||
@@ -125,18 +117,29 @@ export default function AppPage() {
     setError(null);
 
     try {
+      let textToProcess = journalText;
+      
+      if (inputType === 'pdf' && file) {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const data = await pdf(buffer);
+            textToProcess = data.text;
+          } catch (pdfError) {
+              console.error("Error parsing PDF on client:", pdfError);
+              throw new Error("Gagal membaca file PDF. Pastikan file tidak rusak atau terenkripsi.");
+          }
+      }
+
       let actionInput: any = { 
         outputType, 
         language, 
         inputType,
         summaryIntensity: summaryIntensity[0],
+        journalText: textToProcess,
        };
 
-      if (inputType === 'text') {
-        actionInput.journalText = journalText;
-      } else if (inputType === 'pdf' && file) {
-        actionInput.fileContent = await fileToBase64(file);
-      } else if (inputType === 'url') {
+      if (inputType === 'url') {
         actionInput.url = url;
       }
 

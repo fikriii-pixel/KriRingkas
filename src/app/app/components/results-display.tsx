@@ -40,12 +40,13 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   const isRtl = language === 'Arab';
 
   const formattedKonten = ringkasan.konten.split('\n').map(line => line.trim()).filter(line => line.length > 0).map(line => {
+    const pStyle = 'margin-bottom: 0.75rem;';
     // Check if the line is a bullet point, handle both "●" and "•"
     if (line.startsWith('●') || line.startsWith('•')) {
       // For RTL, the bullet should be on the right. The browser handles this with `direction: rtl`.
-      return `<p style="padding-left: 1.5em; text-indent: -1.5em;">${line}</p>`;
+      return `<p style="padding-left: 1.5em; text-indent: -1.5em; ${pStyle}">${line}</p>`;
     }
-    return `<p>${line}</p>`;
+    return `<p style="${pStyle}">${line}</p>`;
   }).join('');
 
   const copyToClipboard = () => {
@@ -147,7 +148,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
             </TabsTrigger>
             <TabsTrigger value="jargon">
               <BookMarked className="mr-2 h-4 w-4" />
-              Penjelasan Jargon ({jargon.length})
+              Glosarium ({jargon.length})
             </TabsTrigger>
           </TabsList>
 

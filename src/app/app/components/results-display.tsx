@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { BookMarked, FileText, Copy, Download, Percent, BarChart, Scissors, RotateCcw } from 'lucide-react';
+import { BookMarked, FileText, Copy, Download, Percent, BarChart, Scissors, Eraser } from 'lucide-react';
 import { Packer, Document, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
 
@@ -109,7 +109,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={onReset} aria-label="Reset Ringkasan">
-            <RotateCcw className="h-4 w-4" />
+            <Eraser className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="icon" onClick={copyToClipboard} aria-label="Salin Ringkasan">
             <Copy className="h-4 w-4" />

@@ -59,6 +59,7 @@ Analisis teks jurnal berikut dan hasilkan output dengan detail ini:
 1.  **Jenis Output**: Buat "{{outputType}}". 
     - Jika jenis output adalah "Poin Penting", setiap poin harus diawali dengan "● " (simbol bulat dan spasi) dan setiap poin harus dipisahkan oleh satu baris baru.
     - Jika jenis output adalah "Ide Konten", hasilkan daftar bernomor atau poin, hindari penggunaan simbol bintang (*), dan pisahkan setiap ide dengan satu baris baru agar lebih jelas.
+    - Jika jenis output adalah "Daftar Pertanyaan", pastikan ada satu baris baru (jeda) antara setiap pertanyaan untuk keterbacaan yang lebih baik.
 2.  **Bahasa Target**: Hasilkan semua output dalam Bahasa {{language}}.
 3.  **Intensitas Ringkasan**: Gunakan tingkat intensitas ringkasan sebesar {{summaryIntensity}}%. Semakin tinggi nilainya, semakin padat ringkasannya.
 4.  **Identifikasi Jargon**: Identifikasi istilah-istilah teknis atau jargon dalam teks dan berikan definisinya.

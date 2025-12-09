@@ -50,7 +50,7 @@ export default function Pricing() {
           >
             {tier.bestValue && (
               <div className="bg-primary text-primary-foreground text-center py-1.5 px-4 text-sm font-semibold rounded-t-lg">
-                Best Value
+                Paling Populer
               </div>
             )}
             <CardHeader className="items-center text-center">

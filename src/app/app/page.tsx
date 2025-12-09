@@ -283,10 +283,10 @@ export default function AppPage() {
                       <SelectValue placeholder="Pilih bahasa" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Indonesia"><div className="flex items-center gap-2">Indonesia</div></SelectItem>
-                      <SelectItem value="Inggris"><div className="flex items-center gap-2">Inggris</div></SelectItem>
-                      <SelectItem value="Arab"><div className="flex items-center gap-2">Arab</div></SelectItem>
-                      <SelectItem value="Jepang"><div className="flex items-center gap-2">Jepang</div></SelectItem>
+                      <SelectItem value="Indonesia">Indonesia</SelectItem>
+                      <SelectItem value="Inggris">Inggris</SelectItem>
+                      <SelectItem value="Arab">Arab</SelectItem>
+                      <SelectItem value="Jepang">Jepang</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -24,8 +24,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { BookMarked, FileText, Copy, Download, Percent, BarChart, Scissors, Eraser } from 'lucide-react';
-import { Packer, Document, Paragraph, TextRun } from 'docx';
+import { Packer, Document, Paragraph, TextRun, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
+import { cn } from '@/lib/utils';
 
 interface ResultsDisplayProps {
   result: GenerateStructuredAcademicSummaryOutput;
@@ -33,13 +34,14 @@ interface ResultsDisplayProps {
 }
 
 export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps) {
-  const { ringkasan, jargon } = result;
+  const { ringkasan, jargon, language } = result;
   const { toast } = useToast();
+
+  const isRtl = language === 'Arab';
 
   const formattedKonten = ringkasan.konten.replace(/● /g, '● ').replace(/\n/g, '<br />');
 
   const copyToClipboard = () => {
-    // Create a temporary element to parse the HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = formattedKonten.replace(/<br \/>/g, '\n');
     const plainText = tempDiv.textContent || tempDiv.innerText || '';
@@ -60,12 +62,12 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   };
 
   const downloadAsDocx = () => {
-    // Basic conversion from simple HTML to docx paragraphs
     const paragraphs = formattedKonten.split(/<br \s*\/?>/gi).map(line => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = line;
         return new Paragraph({
             children: [new TextRun(tempDiv.textContent || tempDiv.innerText || '')],
+            alignment: isRtl ? AlignmentType.RIGHT : AlignmentType.LEFT,
         });
     });
     
@@ -79,9 +81,11 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
                 text: ringkasan.judul || 'Hasil Ringkasan',
                 bold: true,
                 size: 28,
+                rtl: isRtl,
               }),
             ],
             spacing: { after: 200 },
+            alignment: isRtl ? AlignmentType.RIGHT : AlignmentType.LEFT,
           }),
           ...paragraphs
         ],
@@ -101,12 +105,18 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
     });
   };
 
+  const resultContainerClasses = cn(
+    'prose prose-sm max-w-none',
+    {
+      'font-arabic direction-rtl': isRtl,
+    }
+  );
 
   return (
     <Card className="shadow-lg h-full flex flex-col">
       <CardHeader className="flex-row items-start justify-between">
-        <div className="flex-1">
-            <CardTitle>{ringkasan.judul || 'Hasil Ringkasan'}</CardTitle>
+        <div className={cn("flex-1", { 'text-right': isRtl })}>
+            <CardTitle className={cn({ 'font-arabic': isRtl })}>{ringkasan.judul || 'Hasil Ringkasan'}</CardTitle>
             <CardDescription>Hasil analisis yang dibuat oleh AI</CardDescription>
         </div>
         <div className="flex items-center gap-2">
@@ -134,8 +144,8 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="summary" className="mt-4 flex-1 space-y-4 prose prose-sm max-w-none">
-             <div dangerouslySetInnerHTML={{ __html: formattedKonten }} />
+          <TabsContent value="summary" className="mt-4 flex-1 space-y-4">
+             <div className={resultContainerClasses} dangerouslySetInnerHTML={{ __html: formattedKonten }} />
           </TabsContent>
 
           <TabsContent value="jargon" className="mt-4 flex-1">
@@ -143,8 +153,8 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
               <Accordion type="single" collapsible className="w-full">
                 {jargon.map((item, index) => (
                   <AccordionItem value={`item-${index}`} key={index}>
-                    <AccordionTrigger>{item.istilah}</AccordionTrigger>
-                    <AccordionContent>{item.definisi}</AccordionContent>
+                    <AccordionTrigger className={cn({'font-arabic direction-rtl': isRtl})}>{item.istilah}</AccordionTrigger>
+                    <AccordionContent className={cn({'font-arabic direction-rtl text-base': isRtl})}>{item.definisi}</AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>

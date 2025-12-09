@@ -22,6 +22,7 @@ export type GenerateStructuredAcademicSummaryInput = z.infer<
 >;
 
 const GenerateStructuredAcademicSummaryOutputSchema = z.object({
+  language: z.string().describe('The language of the generated output.'),
   ringkasan: z.object({
     judul: z.string().describe('The title of the journal article.'),
     konten: z.string().describe('The main content of the summary, which could be a narrative, bullet points, questions, or content ideas, depending on the user\'s request.'),
@@ -45,13 +46,19 @@ export type GenerateStructuredAcademicSummaryOutput = z.infer<
 export async function generateStructuredAcademicSummary(
   input: GenerateStructuredAcademicSummaryInput
 ): Promise<GenerateStructuredAcademicSummaryOutput> {
-  return generateStructuredAcademicSummaryFlow(input);
+  const result = await generateStructuredAcademicSummaryFlow(input);
+  // Pass the language from input to the output object
+  return { ...result, language: input.language };
 }
 
 const prompt = ai.definePrompt({
   name: 'generateStructuredAcademicSummaryPrompt',
   input: {schema: GenerateStructuredAcademicSummaryInputSchema},
-  output: {schema: GenerateStructuredAcademicSummaryOutputSchema},
+  output: {schema:  z.object({
+      ringkasan: GenerateStructuredAcademicSummaryOutputSchema.shape.ringkasan,
+      jargon: GenerateStructuredAcademicSummaryOutputSchema.shape.jargon,
+    })
+  },
   prompt: `Anda adalah asisten AI ahli dalam analisis dan peringkasan teks akademik.
 Tugas Anda adalah menganalisis teks jurnal yang diberikan dan menghasilkan output sesuai dengan format yang diminta pengguna dalam bahasa target yang ditentukan.
 
@@ -65,7 +72,7 @@ Analisis teks jurnal berikut dan hasilkan output dengan detail ini:
 4.  **Identifikasi Jargon**: Identifikasi istilah-istilah teknis atau jargon dalam teks dan berikan definisinya.
 5.  **Statistik**: Hitung jumlah kata dalam teks asli dan hasil ringkasan. Berdasarkan itu, hitung jumlah kata yang dihilangkan dan persentase efektivitas (kata dihilangkan / kata asli).
 
-Format output Anda **wajib** dalam bentuk JSON yang valid sesuai skema. Pastikan untuk mengisi semua field, termasuk ` + "`statistik`" + `.
+Format output Anda **wajib** dalam bentuk JSON yang valid sesuai skema. Pastikan untuk mengisi semua field, termasuk \`statistik\`.
 
 Teks Jurnal:
 {{{journalText}}}`,
@@ -76,7 +83,10 @@ const generateStructuredAcademicSummaryFlow = ai.defineFlow(
   {
     name: 'generateStructuredAcademicSummaryFlow',
     inputSchema: GenerateStructuredAcademicSummaryInputSchema,
-    outputSchema: GenerateStructuredAcademicSummaryOutputSchema,
+    outputSchema: z.object({
+      ringkasan: GenerateStructuredAcademicSummaryOutputSchema.shape.ringkasan,
+      jargon: GenerateStructuredAcademicSummaryOutputSchema.shape.jargon,
+    }),
   },
   async input => {
     const {output} = await prompt(input);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -54,11 +54,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import type * as PDFJS from 'pdfjs-dist';
 
 type InputType = 'text' | 'pdf' | 'url';
-
-let pdfjsLib: typeof PDFJS | null = null;
 
 export default function AppPage() {
   const [inputType, setInputType] = useState<InputType>('text');
@@ -78,14 +75,6 @@ export default function AppPage() {
   const { toast } = useToast();
 
   const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
-
-  useEffect(() => {
-    // Load pdfjs-dist dynamically only on the client side
-    import('pdfjs-dist/build/pdf').then(lib => {
-      pdfjsLib = lib;
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-    });
-  }, []);
 
   const isButtonDisabled = isLoading || !outputType || !language ||
     (inputType === 'text' && !journalText.trim()) ||
@@ -121,41 +110,21 @@ export default function AppPage() {
     setError(null);
 
     try {
-      let textToProcess = journalText;
+      const formData = new FormData();
+      formData.append('outputType', outputType);
+      formData.append('language', language);
+      formData.append('inputType', inputType);
+      formData.append('summaryIntensity', String(summaryIntensity[0]));
       
-      if (inputType === 'pdf' && file) {
-          if (!pdfjsLib) {
-              throw new Error("Pustaka PDF sedang dimuat, coba lagi sesaat.");
-          }
-          try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-            let fullText = '';
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                fullText += textContent.items.map(item => 'str' in item ? item.str : '').join(' ') + '\n';
-            }
-            textToProcess = fullText;
-          } catch (pdfError) {
-              console.error("Error parsing PDF on client:", pdfError);
-              throw new Error("Gagal membaca file PDF. Pastikan file tidak rusak atau terenkripsi.");
-          }
+      if (inputType === 'text') {
+        formData.append('journalText', journalText);
+      } else if (inputType === 'pdf' && file) {
+        formData.append('file', file);
+      } else if (inputType === 'url') {
+        formData.append('url', url);
       }
 
-      let actionInput: any = { 
-        outputType, 
-        language, 
-        inputType,
-        summaryIntensity: summaryIntensity[0],
-        journalText: textToProcess,
-       };
-
-      if (inputType === 'url') {
-        actionInput.url = url;
-      }
-
-      const response = await summarizeJournalAction(actionInput);
+      const response = await summarizeJournalAction(formData);
 
       if (response.error) {
         setError(response.error);
@@ -176,7 +145,6 @@ export default function AppPage() {
             variant: 'destructive',
         });
     }
-
 
     setIsLoading(false);
   };

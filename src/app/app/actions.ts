@@ -2,17 +2,16 @@
 
 import {
   generateStructuredAcademicSummary,
-  type GenerateStructuredAcademicSummaryInput,
   type GenerateStructuredAcademicSummaryOutput,
 } from '@/ai/flows/generate-structured-academic-summary';
 import { z } from 'zod';
+import pdf from 'pdf-parse';
 
 type ActionResult = {
   data?: GenerateStructuredAcademicSummaryOutput;
   error?: string;
 };
 
-// Simple and insecure web scraping. In a real app, use a robust library like Cheerio or Puppeteer.
 async function getTextFromUrl(url: string): Promise<string> {
   try {
     const response = await fetch(url);
@@ -20,7 +19,6 @@ async function getTextFromUrl(url: string): Promise<string> {
       throw new Error(`Gagal mengambil konten dari URL: ${response.statusText}`);
     }
     const html = await response.text();
-    // This is a very basic way to extract text. It will not work well for complex sites.
     const text = html.replace(/<style[^>]*>.*?<\/style>/gs, ' ')
                      .replace(/<script[^>]*>.*?<\/script>/gs, ' ')
                      .replace(/<[^>]+>/g, ' ')
@@ -35,33 +33,41 @@ async function getTextFromUrl(url: string): Promise<string> {
 
 const actionInputSchema = z.object({
   inputType: z.enum(['text', 'pdf', 'url']),
-  journalText: z.string(), // Always expect text now
+  journalText: z.string().optional(),
+  file: z.instanceof(File).optional(),
   url: z.string().url().optional(),
   outputType: z.string(),
   language: z.string(),
-  summaryIntensity: z.number(),
+  summaryIntensity: z.coerce.number(),
 });
 
-
 export async function summarizeJournalAction(
-  input: unknown
+  formData: FormData
 ): Promise<ActionResult> {
   try {
-    const validatedInput = actionInputSchema.safeParse(input);
+    const validatedInput = actionInputSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!validatedInput.success) {
       return { error: 'Input tidak valid: ' + validatedInput.error.format()._errors.join(', ') };
     }
 
-    const { inputType, journalText, url, outputType, language, summaryIntensity } = validatedInput.data;
+    const { inputType, journalText, file, url, outputType, language, summaryIntensity } = validatedInput.data;
     
     let textToSummarize = '';
 
-    if (inputType === 'url' && url) {
+    if (inputType === 'text') {
+        textToSummarize = journalText || '';
+    } else if (inputType === 'url' && url) {
         textToSummarize = await getTextFromUrl(url);
-    } else {
-        textToSummarize = journalText;
+    } else if (inputType === 'pdf' && file) {
+        try {
+            const buffer = Buffer.from(await file.arrayBuffer());
+            const data = await pdf(buffer);
+            textToSummarize = data.text;
+        } catch (pdfError) {
+            console.error("Error parsing PDF on server:", pdfError);
+            throw new Error("Gagal membaca file PDF. Pastikan file tidak rusak atau terenkripsi.");
+        }
     }
-
 
     if (!textToSummarize.trim()) {
       throw new Error('Tidak ada konten teks yang dapat diringkas.');

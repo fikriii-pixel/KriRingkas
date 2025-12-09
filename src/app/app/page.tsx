@@ -50,7 +50,6 @@ import {
   Lightbulb,
   SlidersHorizontal,
 } from 'lucide-react';
-import { useDailyLimit } from '@/hooks/use-daily-limit';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -73,7 +72,6 @@ export default function AppPage() {
     useState<GenerateStructuredAcademicSummaryOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { checkLimit, incrementUsage } = useDailyLimit();
 
   const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
 
@@ -104,10 +102,6 @@ export default function AppPage() {
         variant: 'destructive',
       });
       return;
-    }
-
-    if (!checkLimit()) {
-      return; // The hook handles the toast message
     }
 
     setIsLoading(true);
@@ -148,7 +142,6 @@ export default function AppPage() {
         });
       } else if (response.data) {
         setResult(response.data);
-        incrementUsage();
       }
     } catch (e: any) {
         const errorMessage = e instanceof Error ? e.message : 'Gagal memproses input.';

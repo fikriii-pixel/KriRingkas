@@ -21,7 +21,6 @@ export default function Footer() {
             <h4 className="font-semibold mb-3">Tautan</h4>
             <ul className="space-y-2 text-muted-foreground">
               <li><Link href="#features" className="hover:text-primary">Fitur</Link></li>
-              <li><Link href="#pricing" className="hover:text-primary">Harga</Link></li>
               <li><Link href="#faq" className="hover:text-primary">FAQ</Link></li>
               <li><Link href="/app" className="hover:text-primary">Coba Sekarang</Link></li>
             </ul>

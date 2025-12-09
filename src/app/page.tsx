@@ -6,7 +6,6 @@ import Solution from '@/components/landing/solution';
 import Features from '@/components/landing/features';
 import SocialProof from '@/components/landing/social-proof';
 import HowItWorks from '@/components/landing/how-it-works';
-import Pricing from '@/components/landing/pricing';
 import Faq from '@/components/landing/faq';
 import SecondaryCta from '@/components/landing/secondary-cta';
 
@@ -21,7 +20,6 @@ export default function Home() {
         <Features />
         <SocialProof />
         <HowItWorks />
-        <Pricing />
         <Faq />
         <SecondaryCta />
       </main>

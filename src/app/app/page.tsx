@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -54,10 +54,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import type * as PDFJS from 'pdfjs-dist';
 
 type InputType = 'text' | 'pdf' | 'url';
 
+let pdfjsLib: typeof PDFJS | null = null;
 
 export default function AppPage() {
   const [inputType, setInputType] = useState<InputType>('text');
@@ -78,10 +79,13 @@ export default function AppPage() {
 
   const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
 
-  // pdf.js setup for browser environment
-  if (typeof window !== 'undefined') {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-  }
+  useEffect(() => {
+    // Load pdfjs-dist dynamically only on the client side
+    import('pdfjs-dist/build/pdf').then(lib => {
+      pdfjsLib = lib;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+    });
+  }, []);
 
   const isButtonDisabled = isLoading || !outputType || !language ||
     (inputType === 'text' && !journalText.trim()) ||
@@ -120,6 +124,9 @@ export default function AppPage() {
       let textToProcess = journalText;
       
       if (inputType === 'pdf' && file) {
+          if (!pdfjsLib) {
+              throw new Error("Pustaka PDF sedang dimuat, coba lagi sesaat.");
+          }
           try {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;

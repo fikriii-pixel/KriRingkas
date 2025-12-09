@@ -15,6 +15,7 @@ const GenerateStructuredAcademicSummaryInputSchema = z.object({
   journalText: z.string().describe('The text content of the journal article to summarize.'),
   outputType: z.string().describe('The desired output format (e.g., "Ringkasan naratif", "Poin Penting", "Daftar Pertanyaan", "Ide Konten").'),
   language: z.string().describe('The target language for the summary (e.g., "Indonesia", "Inggris", "Arab", "Jepang").'),
+  summaryIntensity: z.number().describe('The intensity of the summarization from 0 to 100.'),
 });
 export type GenerateStructuredAcademicSummaryInput = z.infer<
   typeof GenerateStructuredAcademicSummaryInputSchema
@@ -24,6 +25,12 @@ const GenerateStructuredAcademicSummaryOutputSchema = z.object({
   ringkasan: z.object({
     judul: z.string().describe('The title of the journal article.'),
     konten: z.string().describe('The main content of the summary, which could be a narrative, bullet points, questions, or content ideas, depending on the user\'s request.'),
+    statistik: z.object({
+        kataAsli: z.number().describe('Original word count.'),
+        kataRingkasan: z.number().describe('Summarized word count.'),
+        kataHilang: z.number().describe('Number of words removed.'),
+        efektivitas: z.number().describe('Effectiveness of summarization in percentage.'),
+    }).describe('Statistics about the summary.'),
   }).describe('Structured summary of the journal article.'),
   jargon: z.array(z.object({
     istilah: z.string().describe('Jargon term from the journal article.'),
@@ -51,9 +58,11 @@ Tugas Anda adalah menganalisis teks jurnal yang diberikan dan menghasilkan outpu
 Analisis teks jurnal berikut dan hasilkan output dengan detail ini:
 1.  **Jenis Output**: Buat "{{outputType}}".
 2.  **Bahasa Target**: Hasilkan semua output dalam Bahasa {{language}}.
-3.  **Identifikasi Jargon**: Identifikasi istilah-istilah teknis atau jargon dalam teks dan berikan definisinya.
+3.  **Intensitas Ringkasan**: Gunakan tingkat intensitas ringkasan sebesar {{summaryIntensity}}%. Semakin tinggi nilainya, semakin padat ringkasannya.
+4.  **Identifikasi Jargon**: Identifikasi istilah-istilah teknis atau jargon dalam teks dan berikan definisinya.
+5.  **Statistik**: Hitung jumlah kata dalam teks asli dan hasil ringkasan. Berdasarkan itu, hitung jumlah kata yang dihilangkan dan persentase efektivitas (kata dihilangkan / kata asli).
 
-Format output Anda **wajib** dalam bentuk JSON yang valid sesuai skema.
+Format output Anda **wajib** dalam bentuk JSON yang valid sesuai skema. Pastikan untuk mengisi semua field, termasuk ` + "`statistik`" + `.
 
 Teks Jurnal:
 {{{journalText}}}`,

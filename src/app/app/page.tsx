@@ -34,10 +34,16 @@ import {
   Package,
   Sparkles,
   Upload,
+  BookOpen,
+  ListTree,
+  HelpCircle,
+  Lightbulb,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useDailyLimit } from '@/hooks/use-daily-limit';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 
 type InputType = 'text' | 'pdf' | 'url';
 
@@ -50,6 +56,7 @@ export default function AppPage() {
   
   const [outputType, setOutputType] = useState('');
   const [language, setLanguage] = useState('');
+  const [summaryIntensity, setSummaryIntensity] = useState([50]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] =
@@ -96,7 +103,12 @@ export default function AppPage() {
     setError(null);
 
     try {
-      let actionInput: any = { outputType, language, inputType };
+      let actionInput: any = { 
+        outputType, 
+        language, 
+        inputType,
+        summaryIntensity: summaryIntensity[0],
+       };
 
       if (inputType === 'text') {
         actionInput.journalText = journalText;
@@ -172,7 +184,7 @@ export default function AppPage() {
                   <Textarea
                     id="journal-text"
                     placeholder="Tempelkan teks jurnal di sini..."
-                    className="min-h-[250px] text-base"
+                    className="min-h-[200px] text-base"
                     value={journalText}
                     onChange={(e) => setJournalText(e.target.value)}
                     disabled={isLoading}
@@ -191,6 +203,23 @@ export default function AppPage() {
                     <Input id="url-input" type="url" placeholder="https://example.com/journal.html" value={url} onChange={(e) => setUrl(e.target.value)} disabled={isLoading} />
                 </TabsContent>
               </Tabs>
+
+              <div className="space-y-2">
+                  <Label htmlFor="summary-intensity" className="flex items-center gap-2"><SlidersHorizontal />Intensitas Ringkasan: {summaryIntensity[0]}%</Label>
+                  <Slider
+                    id="summary-intensity"
+                    min={10}
+                    max={90}
+                    step={10}
+                    value={summaryIntensity}
+                    onValueChange={setSummaryIntensity}
+                    disabled={isLoading}
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Kurang Padat</span>
+                    <span>Sangat Padat</span>
+                  </div>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -200,10 +229,10 @@ export default function AppPage() {
                       <SelectValue placeholder="Pilih jenis output" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Ringkasan naratif">Ringkasan Naratif</SelectItem>
-                      <SelectItem value="Poin Penting">Poin Penting</SelectItem>
-                      <SelectItem value="Daftar Pertanyaan">Daftar Pertanyaan Esensial</SelectItem>
-                      <SelectItem value="Ide Konten">Saran Ide Konten</SelectItem>
+                      <SelectItem value="Ringkasan naratif"><div className="flex items-center gap-2"><BookOpen /> Ringkasan Naratif</div></SelectItem>
+                      <SelectItem value="Poin Penting"><div className="flex items-center gap-2"><ListTree /> Poin Penting</div></SelectItem>
+                      <SelectItem value="Daftar Pertanyaan"><div className="flex items-center gap-2"><HelpCircle /> Daftar Pertanyaan</div></SelectItem>
+                      <SelectItem value="Ide Konten"><div className="flex items-center gap-2"><Lightbulb /> Saran Ide Konten</div></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -214,10 +243,10 @@ export default function AppPage() {
                       <SelectValue placeholder="Pilih bahasa" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Indonesia">Indonesia</SelectItem>
-                      <SelectItem value="Inggris">Inggris</SelectItem>
-                      <SelectItem value="Arab">Arab</SelectItem>
-                      <SelectItem value="Jepang">Jepang</SelectItem>
+                      <SelectItem value="Indonesia"><div className="flex items-center gap-2">🇮🇩 Indonesia</div></SelectItem>
+                      <SelectItem value="Inggris"><div className="flex items-center gap-2">🇬🇧 Inggris</div></SelectItem>
+                      <SelectItem value="Arab"><div className="flex items-center gap-2">🇸🇦 Arab</div></SelectItem>
+                      <SelectItem value="Jepang"><div className="flex items-center gap-2">🇯🇵 Jepang</div></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

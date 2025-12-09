@@ -10,6 +10,8 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -21,7 +23,7 @@ import {
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { BookMarked, FileText, Copy, Download } from 'lucide-react';
+import { BookMarked, FileText, Copy, Download, Percent, BarChart, Scissors } from 'lucide-react';
 import { Packer, Document, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
 
@@ -98,9 +100,12 @@ export default function ResultsDisplay({ result }: ResultsDisplayProps) {
 
 
   return (
-    <Card className="shadow-lg h-full">
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>{ringkasan.judul || 'Hasil Ringkasan'}</CardTitle>
+    <Card className="shadow-lg h-full flex flex-col">
+      <CardHeader className="flex-row items-start justify-between">
+        <div className="flex-1">
+            <CardTitle>{ringkasan.judul || 'Hasil Ringkasan'}</CardTitle>
+            <CardDescription>Hasil analisis yang dibuat oleh AI</CardDescription>
+        </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={copyToClipboard} aria-label="Salin Ringkasan">
             <Copy className="h-4 w-4" />
@@ -110,8 +115,8 @@ export default function ResultsDisplay({ result }: ResultsDisplayProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="summary">
+      <CardContent className="flex-1">
+        <Tabs defaultValue="summary" className="flex flex-col h-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="summary">
               <FileText className="mr-2 h-4 w-4" />
@@ -123,11 +128,11 @@ export default function ResultsDisplay({ result }: ResultsDisplayProps) {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="summary" className="mt-4 space-y-4 prose prose-sm max-w-none">
+          <TabsContent value="summary" className="mt-4 flex-1 space-y-4 prose prose-sm max-w-none">
              <div dangerouslySetInnerHTML={{ __html: ringkasan.konten.replace(/\n/g, '<br />') }} />
           </TabsContent>
 
-          <TabsContent value="jargon" className="mt-4">
+          <TabsContent value="jargon" className="mt-4 flex-1">
             {jargon.length > 0 ? (
               <Accordion type="single" collapsible className="w-full">
                 {jargon.map((item, index) => (
@@ -145,6 +150,25 @@ export default function ResultsDisplay({ result }: ResultsDisplayProps) {
           </TabsContent>
         </Tabs>
       </CardContent>
+       {ringkasan.statistik && (
+        <CardFooter className="bg-muted/50 border-t p-4 grid grid-cols-3 gap-4 text-center">
+            <div className="flex flex-col items-center gap-1">
+                <BarChart className="h-5 w-5 text-muted-foreground" />
+                <span className="text-lg font-bold">{ringkasan.statistik.kataAsli} → {ringkasan.statistik.kataRingkasan}</span>
+                <span className="text-xs text-muted-foreground">Jumlah Kata</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+                <Scissors className="h-5 w-5 text-muted-foreground" />
+                <span className="text-lg font-bold">{ringkasan.statistik.kataHilang}</span>
+                <span className="text-xs text-muted-foreground">Kata Dihilangkan</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+                <Percent className="h-5 w-5 text-muted-foreground" />
+                <span className="text-lg font-bold">{ringkasan.statistik.efektivitas}%</span>
+                <span className="text-xs text-muted-foreground">Efektivitas</span>
+            </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }

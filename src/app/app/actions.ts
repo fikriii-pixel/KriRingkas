@@ -40,6 +40,7 @@ const actionInputSchema = z.object({
   url: z.string().url().optional(),
   outputType: z.string(),
   language: z.string(),
+  summaryIntensity: z.number(),
 });
 
 
@@ -52,7 +53,7 @@ export async function summarizeJournalAction(
       return { error: 'Input tidak valid: ' + validatedInput.error.format()._errors.join(', ') };
     }
 
-    const { inputType, journalText, fileContent, url, outputType, language } = validatedInput.data;
+    const { inputType, journalText, fileContent, url, outputType, language, summaryIntensity } = validatedInput.data;
     
     let textToSummarize = '';
 
@@ -78,7 +79,8 @@ export async function summarizeJournalAction(
     const summary = await generateStructuredAcademicSummary({ 
       journalText: textToSummarize,
       outputType,
-      language
+      language,
+      summaryIntensity,
     });
     
     if (!summary || !summary.ringkasan || !summary.jargon) {

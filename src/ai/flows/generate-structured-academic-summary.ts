@@ -5,7 +5,7 @@
  *
  * - generateStructuredAcademicSummary - A function that handles the generation of structured academic summaries.
  * - GenerateStructuredAcademicSummaryInput - The input type for the generateStructuredAcademicSummary function.
- * - GenerateStructuredAcademicSummaryOutput - The return type for the generateStructuredAcademicSummary function.
+ * - GenerateStructuredAcademicSummaryOutput - The return type for the generateStructuredAcademic-summary function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -56,7 +56,9 @@ const prompt = ai.definePrompt({
 Tugas Anda adalah menganalisis teks jurnal yang diberikan dan menghasilkan output sesuai dengan format yang diminta pengguna dalam bahasa target yang ditentukan.
 
 Analisis teks jurnal berikut dan hasilkan output dengan detail ini:
-1.  **Jenis Output**: Buat "{{outputType}}". Jika jenis output adalah "Poin Penting", setiap poin harus diawali dengan "● " (simbol bulat dan spasi) dan setiap poin harus dipisahkan oleh satu baris baru.
+1.  **Jenis Output**: Buat "{{outputType}}". 
+    - Jika jenis output adalah "Poin Penting", setiap poin harus diawali dengan "● " (simbol bulat dan spasi) dan setiap poin harus dipisahkan oleh satu baris baru.
+    - Jika jenis output adalah "Ide Konten", hasilkan daftar bernomor atau poin, hindari penggunaan simbol bintang (*).
 2.  **Bahasa Target**: Hasilkan semua output dalam Bahasa {{language}}.
 3.  **Intensitas Ringkasan**: Gunakan tingkat intensitas ringkasan sebesar {{summaryIntensity}}%. Semakin tinggi nilainya, semakin padat ringkasannya.
 4.  **Identifikasi Jargon**: Identifikasi istilah-istilah teknis atau jargon dalam teks dan berikan definisinya.

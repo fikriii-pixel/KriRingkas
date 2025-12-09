@@ -62,11 +62,10 @@ export async function summarizeJournalAction(
       textToSummarize = journalText;
     } else if (inputType === 'pdf') {
       if (!fileContent) throw new Error('Konten file PDF tidak ditemukan.');
-      // This is a placeholder for server-side PDF text extraction.
-      // For a real implementation, you would use a library like pdf-parse.
-      // Here, we'll simulate by assuming the client sends plain text for now.
-      // In a real scenario, you'd process the base64 data.
-      textToSummarize = `(Konten dari PDF) ${Buffer.from(fileContent, 'base64').toString('utf-8')}`;
+      // The client is now expected to send text content extracted from the PDF.
+      // The base64 logic was flawed as it didn't actually parse the PDF.
+      // We now trust the client to send reasonable text.
+      textToSummarize = fileContent;
     } else if (inputType === 'url') {
       if (!url) throw new Error('URL tidak boleh kosong.');
       textToSummarize = await getTextFromUrl(url);

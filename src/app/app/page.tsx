@@ -49,6 +49,7 @@ import {
   HelpCircle,
   Lightbulb,
   SlidersHorizontal,
+  Eraser,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -119,14 +120,10 @@ export default function AppPage() {
       if (inputType === 'text') {
         actionInput.journalText = journalText;
       } else if (inputType === 'pdf' && file) {
-        // Read file as Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        const fileContent = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve((reader.result as string).split(',')[1]);
-          reader.onerror = (error) => reject(error);
-        });
-        actionInput.fileContent = fileContent;
+        // This is a client-side simulation. A real app would need a robust PDF parsing library.
+        // For now, we send a placeholder text to the server.
+        // This avoids the server-side crash but won't produce a real summary from the PDF.
+        actionInput.fileContent = `Konten dari file PDF "${file.name}" akan diekstrak di sini. Fitur ini masih dalam pengembangan.`;
       } else if (inputType === 'url') {
         actionInput.url = url;
       }

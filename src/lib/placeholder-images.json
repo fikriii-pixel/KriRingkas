@@ -2,27 +2,39 @@
   "placeholderImages": [
     {
       "id": "hero-image",
-      "description": "Abstract representation of knowledge and AI",
-      "imageUrl": "https://images.unsplash.com/photo-1604011237320-8e0506614fdf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhYnN0cmFjdCUyMHRlY2hub2xvZ3l8ZW58MHx8fHwxNzY1Mjc2MTEzfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "abstract technology"
+      "description": "Clean interface of an AI summarizer app showing input and structured output",
+      "imageUrl": "https://images.unsplash.com/photo-1667284152849-850edc1b341e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhcHAlMjBpbnRlcmZhY2V8ZW58MHx8fHwxNzY1Mjc5NjQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "app interface"
+    },
+    {
+      "id": "how-it-works-1",
+      "description": "Illustration of pasting text into a box",
+      "imageUrl": "https://images.unsplash.com/photo-1661287137833-628e49395333?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwYXN0ZSUyMHRleHR8ZW58MHx8fHwxNzY1Mjk2MjU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "paste text"
+    },
+    {
+      "id": "how-it-works-2",
+      "description": "Illustration of choosing options",
+      "imageUrl": "https://images.unsplash.com/photo-1589210212007-20415bd621b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzZWxlY3QlMjBvcHRpb258ZW58MHx8fHwxNzY1Mjk2MjU1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "select option"
+    },
+    {
+      "id": "how-it-works-3",
+      "description": "Illustration of a structured document output",
+      "imageUrl": "https://images.unsplash.com/photo-1762341112610-58061dbace4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxkb2N1bWVudCUyMG91dHB1dHxlbnwwfHx8fDE3NjUyOTYyNTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "document output"
     },
     {
       "id": "testimonial-1",
-      "description": "Portrait of a student",
-      "imageUrl": "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjUyNDQyOTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person portrait"
+      "description": "Portrait of a female postgraduate student",
+      "imageUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzdHVkZW50JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY1MjgzNDg4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student portrait"
     },
     {
       "id": "testimonial-2",
-      "description": "Portrait of another student",
-      "imageUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjUyNDQyOTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person portrait"
-    },
-    {
-      "id": "testimonial-3",
-      "description": "Portrait of a third student",
-      "imageUrl": "https://images.unsplash.com/photo-1540569014015-19a7be504e3a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjUyNDQyOTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person portrait"
+      "description": "Portrait of a male undergraduate student",
+      "imageUrl": "https://images.unsplash.com/photo-1619431667975-e93b820cde63?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzdHVkZW50JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY1MjgzNDg4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student portrait"
     }
   ]
 }

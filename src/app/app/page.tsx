@@ -57,6 +57,21 @@ import { Slider } from '@/components/ui/slider';
 
 type InputType = 'text' | 'pdf' | 'url';
 
+// Helper to convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      // Result is 'data:application/pdf;base64,....', we only need the base64 part
+      const base64String = (reader.result as string).split(',')[1];
+      resolve(base64String);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+
 export default function AppPage() {
   const [inputType, setInputType] = useState<InputType>('text');
   const [journalText, setJournalText] = useState('');
@@ -120,10 +135,7 @@ export default function AppPage() {
       if (inputType === 'text') {
         actionInput.journalText = journalText;
       } else if (inputType === 'pdf' && file) {
-        // This is a client-side simulation. A real app would need a robust PDF parsing library.
-        // For now, we send a placeholder text to the server.
-        // This avoids the server-side crash but won't produce a real summary from the PDF.
-        actionInput.fileContent = `Konten dari file PDF "${file.name}" akan diekstrak di sini. Fitur ini masih dalam pengembangan.`;
+        actionInput.fileContent = await fileToBase64(file);
       } else if (inputType === 'url') {
         actionInput.url = url;
       }

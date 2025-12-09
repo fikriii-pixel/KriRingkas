@@ -6,6 +6,7 @@ import {
   type GenerateStructuredAcademicSummaryOutput,
 } from '@/ai/flows/generate-structured-academic-summary';
 import { z } from 'zod';
+import pdf from 'pdf-parse';
 
 type ActionResult = {
   data?: GenerateStructuredAcademicSummaryOutput;
@@ -32,6 +33,18 @@ async function getTextFromUrl(url: string): Promise<string> {
     throw new Error('Tidak dapat mengambil atau memproses konten dari URL yang diberikan.');
   }
 }
+
+async function getTextFromPdf(base64: string): Promise<string> {
+    try {
+        const buffer = Buffer.from(base64, 'base64');
+        const data = await pdf(buffer);
+        return data.text;
+    } catch (error) {
+        console.error('Error parsing PDF:', error);
+        throw new Error('Gagal memproses file PDF. Pastikan file tidak rusak.');
+    }
+}
+
 
 const actionInputSchema = z.object({
   inputType: z.enum(['text', 'pdf', 'url']),
@@ -62,10 +75,7 @@ export async function summarizeJournalAction(
       textToSummarize = journalText;
     } else if (inputType === 'pdf') {
       if (!fileContent) throw new Error('Konten file PDF tidak ditemukan.');
-      // The client is now expected to send text content extracted from the PDF.
-      // The base64 logic was flawed as it didn't actually parse the PDF.
-      // We now trust the client to send reasonable text.
-      textToSummarize = fileContent;
+      textToSummarize = await getTextFromPdf(fileContent);
     } else if (inputType === 'url') {
       if (!url) throw new Error('URL tidak boleh kosong.');
       textToSummarize = await getTextFromUrl(url);

@@ -13,6 +13,8 @@ import {z} from 'genkit';
 
 const GenerateStructuredAcademicSummaryInputSchema = z.object({
   journalText: z.string().describe('The text content of the journal article to summarize.'),
+  outputType: z.string().describe('The desired output format (e.g., "Ringkasan naratif", "Poin Penting", "Daftar Pertanyaan", "Ide Konten").'),
+  language: z.string().describe('The target language for the summary (e.g., "Indonesia", "Inggris", "Arab", "Jepang").'),
 });
 export type GenerateStructuredAcademicSummaryInput = z.infer<
   typeof GenerateStructuredAcademicSummaryInputSchema
@@ -21,10 +23,7 @@ export type GenerateStructuredAcademicSummaryInput = z.infer<
 const GenerateStructuredAcademicSummaryOutputSchema = z.object({
   ringkasan: z.object({
     judul: z.string().describe('The title of the journal article.'),
-    metode: z.string().describe('The methods used in the study.'),
-    hasil: z.string().describe('The results of the study.'),
-    kesimpulan: z.string().describe('The conclusion of the study.'),
-    poin: z.array(z.string()).describe('Key points from the journal article.'),
+    konten: z.string().describe('The main content of the summary, which could be a narrative, bullet points, questions, or content ideas, depending on the user\'s request.'),
   }).describe('Structured summary of the journal article.'),
   jargon: z.array(z.object({
     istilah: z.string().describe('Jargon term from the journal article.'),
@@ -46,8 +45,20 @@ const prompt = ai.definePrompt({
   name: 'generateStructuredAcademicSummaryPrompt',
   input: {schema: GenerateStructuredAcademicSummaryInputSchema},
   output: {schema: GenerateStructuredAcademicSummaryOutputSchema},
-  prompt: `Analisis teks jurnal berikut dan buatkan Ringkasan Akademik Terstruktur dalam Bahasa Indonesia formal. Output wajib JSON.\n\nJurnal:\n{{{journalText}}}`,
+  prompt: `Anda adalah asisten AI ahli dalam analisis dan peringkasan teks akademik.
+Tugas Anda adalah menganalisis teks jurnal yang diberikan dan menghasilkan output sesuai dengan format yang diminta pengguna dalam bahasa target yang ditentukan.
+
+Analisis teks jurnal berikut dan hasilkan output dengan detail ini:
+1.  **Jenis Output**: Buat "{{outputType}}".
+2.  **Bahasa Target**: Hasilkan semua output dalam Bahasa {{language}}.
+3.  **Identifikasi Jargon**: Identifikasi istilah-istilah teknis atau jargon dalam teks dan berikan definisinya.
+
+Format output Anda **wajib** dalam bentuk JSON yang valid sesuai skema.
+
+Teks Jurnal:
+{{{journalText}}}`,
 });
+
 
 const generateStructuredAcademicSummaryFlow = ai.defineFlow(
   {

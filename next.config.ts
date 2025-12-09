@@ -35,6 +35,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // Tambahkan ini untuk mengabaikan 'canvas' di sisi klien
+    if (!isServer) {
+      config.externals.push('canvas');
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

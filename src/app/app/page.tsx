@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -54,6 +54,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
+import * as pdfjs from 'pdfjs-dist';
 
 type InputType = 'text' | 'pdf' | 'url';
 
@@ -66,7 +67,7 @@ export default function AppPage() {
   
   const [outputType, setOutputType] = useState('');
   const [language, setLanguage] = useState('');
-  const [summaryIntensity, setSummaryIntensity] = useState([50]);
+  const [summaryIntensity, setSummaryIntensity] = useState([25]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] =
@@ -75,6 +76,11 @@ export default function AppPage() {
   const { toast } = useToast();
 
   const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
+
+  useEffect(() => {
+    // Set the workerSrc for pdfjs-dist
+    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+  }, []);
 
   const isButtonDisabled = isLoading || !outputType || !language ||
     (inputType === 'text' && !journalText.trim()) ||
@@ -94,6 +100,18 @@ export default function AppPage() {
     }
   };
   
+  const getTextFromPdf = async (pdfFile: File): Promise<string> => {
+    const arrayBuffer = await pdfFile.arrayBuffer();
+    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => ('str' in item ? item.str : '')).join(' ');
+    }
+    return text;
+  }
+
   const handleSummarize = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isButtonDisabled) {
@@ -109,24 +127,36 @@ export default function AppPage() {
     setResult(null);
     setError(null);
     
-    const formData = new FormData();
-    formData.append('inputType', inputType);
-    formData.append('outputType', outputType);
-    formData.append('language', language);
-    formData.append('summaryIntensity', String(summaryIntensity[0]));
-    
-    if (inputType === 'text') {
-      formData.append('journalText', journalText);
-    } else if (inputType === 'url') {
-      formData.append('url', url);
-    } else if (inputType === 'pdf' && file) {
-      formData.append('pdfFile', file);
-    } else {
-      setIsLoading(false);
-      return;
-    }
-    
     try {
+        let textToSummarize = '';
+
+        if (inputType === 'text') {
+            textToSummarize = journalText;
+        } else if (inputType === 'url' && url) {
+            // Server action will handle URL fetching
+        } else if (inputType === 'pdf' && file) {
+            textToSummarize = await getTextFromPdf(file);
+        }
+
+        const formData = new FormData();
+        formData.append('inputType', inputType);
+        formData.append('outputType', outputType);
+        formData.append('language', language);
+        formData.append('summaryIntensity', String(summaryIntensity[0]));
+        
+        // Only append text if it's not a URL input, as URL content is fetched server-side
+        if (inputType !== 'url') {
+             formData.append('journalText', textToSummarize);
+        }
+
+        if (inputType === 'url') {
+            formData.append('url', url);
+        }
+
+        if (!textToSummarize && inputType !== 'url') {
+             throw new Error('Tidak ada konten teks yang dapat diringkas. Pastikan input valid atau file berisi teks.');
+        }
+
       const response = await summarizeJournalAction(formData);
 
       if (response.error) {
@@ -219,8 +249,8 @@ export default function AppPage() {
                   <Label htmlFor="summary-intensity" className="flex items-center gap-2"><SlidersHorizontal />Intensitas Ringkasan: {summaryIntensity[0]}%</Label>
                   <Slider
                     id="summary-intensity"
-                    min={10}
-                    max={90}
+                    min={0}
+                    max={50}
                     step={10}
                     value={summaryIntensity}
                     onValueChange={setSummaryIntensity}

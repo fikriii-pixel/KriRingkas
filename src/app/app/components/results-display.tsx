@@ -36,10 +36,12 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
   const { ringkasan, jargon } = result;
   const { toast } = useToast();
 
+  const formattedKonten = ringkasan.konten.replace(/● /g, '● ').replace(/\n/g, '<br />');
+
   const copyToClipboard = () => {
     // Create a temporary element to parse the HTML
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = ringkasan.konten.replace(/<br \/>/g, '\n');
+    tempDiv.innerHTML = formattedKonten.replace(/<br \/>/g, '\n');
     const plainText = tempDiv.textContent || tempDiv.innerText || '';
     
     navigator.clipboard.writeText(plainText).then(() => {
@@ -59,7 +61,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
 
   const downloadAsDocx = () => {
     // Basic conversion from simple HTML to docx paragraphs
-    const paragraphs = ringkasan.konten.split(/<br \s*\/?>/gi).map(line => {
+    const paragraphs = formattedKonten.split(/<br \s*\/?>/gi).map(line => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = line;
         return new Paragraph({
@@ -133,7 +135,7 @@ export default function ResultsDisplay({ result, onReset }: ResultsDisplayProps)
           </TabsList>
 
           <TabsContent value="summary" className="mt-4 flex-1 space-y-4 prose prose-sm max-w-none">
-             <div dangerouslySetInnerHTML={{ __html: ringkasan.konten.replace(/\n/g, '<br />') }} />
+             <div dangerouslySetInnerHTML={{ __html: formattedKonten }} />
           </TabsContent>
 
           <TabsContent value="jargon" className="mt-4 flex-1">

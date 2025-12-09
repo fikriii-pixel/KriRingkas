@@ -1,3 +1,5 @@
+'use client';
+
 import type { GenerateStructuredAcademicSummaryOutput } from '@/ai/flows/generate-structured-academic-summary';
 import {
   Accordion,

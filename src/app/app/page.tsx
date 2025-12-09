@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -54,7 +54,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import * as pdfjs from 'pdfjs-dist';
 
 type InputType = 'text' | 'pdf' | 'url';
 
@@ -77,11 +76,6 @@ export default function AppPage() {
 
   const [isResetAlertOpen, setIsResetAlertOpen] = useState(false);
 
-  useEffect(() => {
-    // Set the workerSrc for pdfjs-dist
-    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
-  }, []);
-
   const isButtonDisabled = isLoading || !outputType || !language ||
     (inputType === 'text' && !journalText.trim()) ||
     (inputType === 'pdf' && !file) ||
@@ -99,18 +93,6 @@ export default function AppPage() {
       }
     }
   };
-  
-  const getTextFromPdf = async (pdfFile: File): Promise<string> => {
-    const arrayBuffer = await pdfFile.arrayBuffer();
-    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
-    let text = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map(item => ('str' in item ? item.str : '')).join(' ');
-    }
-    return text;
-  }
 
   const handleSummarize = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -128,47 +110,32 @@ export default function AppPage() {
     setError(null);
     
     try {
-        let textToSummarize = '';
-
-        if (inputType === 'text') {
-            textToSummarize = journalText;
-        } else if (inputType === 'url' && url) {
-            // Server action will handle URL fetching
-        } else if (inputType === 'pdf' && file) {
-            textToSummarize = await getTextFromPdf(file);
-        }
-
         const formData = new FormData();
         formData.append('inputType', inputType);
         formData.append('outputType', outputType);
         formData.append('language', language);
         formData.append('summaryIntensity', String(summaryIntensity[0]));
-        
-        // Only append text if it's not a URL input, as URL content is fetched server-side
-        if (inputType !== 'url') {
-             formData.append('journalText', textToSummarize);
-        }
 
-        if (inputType === 'url') {
+        if (inputType === 'text') {
+            formData.append('journalText', journalText);
+        } else if (inputType === 'url') {
             formData.append('url', url);
+        } else if (inputType === 'pdf' && file) {
+            formData.append('pdfFile', file);
         }
 
-        if (!textToSummarize && inputType !== 'url') {
-             throw new Error('Tidak ada konten teks yang dapat diringkas. Pastikan input valid atau file berisi teks.');
+        const response = await summarizeJournalAction(formData);
+
+        if (response.error) {
+            setError(response.error);
+            toast({
+                title: 'Terjadi Kesalahan',
+                description: response.error,
+                variant: 'destructive',
+            });
+        } else if (response.data) {
+            setResult(response.data);
         }
-
-      const response = await summarizeJournalAction(formData);
-
-      if (response.error) {
-        setError(response.error);
-        toast({
-          title: 'Terjadi Kesalahan',
-          description: response.error,
-          variant: 'destructive',
-        });
-      } else if (response.data) {
-        setResult(response.data);
-      }
     } catch (e: any) {
         const errorMessage = e instanceof Error ? e.message : 'Gagal memproses input.';
         setError(errorMessage);
